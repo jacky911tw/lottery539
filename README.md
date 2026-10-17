@@ -6,7 +6,6 @@
 
 - 網頁：[lottery539.jacky.me.uk](https://lottery539.jacky.me.uk/)
 - JSON API：[lottery539.jacky.me.uk/api](https://lottery539.jacky.me.uk/api)
-- GitHub：[jacky911tw/lottery539](https://github.com/jacky911tw/lottery539)（Private）
 
 ## 候選號碼規則
 
