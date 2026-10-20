@@ -6,7 +6,7 @@
 
 - 網頁：[lottery539.jacky.me.uk](https://lottery539.jacky.me.uk/)
 - JSON API：[lottery539.jacky.me.uk/api](https://lottery539.jacky.me.uk/api)
-- `/api` 回應包含最近 10 期開獎號碼（`recentDraws`）與候選號碼。
+- `/api` 回應包含最近 10 期開獎日期、星期（`weekday`）、號碼（`recentDraws`）與候選號碼。
 
 ## 候選號碼規則
 

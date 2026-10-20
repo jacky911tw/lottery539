@@ -91,10 +91,16 @@ async function getDrawData() {
     referenceDraw: draw,
     recentDraws: validRecords.slice(0, 10).map((record) => ({
       date: record.draw_date,
+      weekday: getWeekday(record.draw_date),
       period: record.period,
       numbers: record.numbers.slice(0, 5),
     })),
   };
+}
+
+function getWeekday(date) {
+  const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+  return weekdays[new Date(`${date}T00:00:00Z`).getUTCDay()];
 }
 
 function predictNextDraw(numbers) {
@@ -122,7 +128,7 @@ function html(body) {
 function renderPage(result) {
   const numbers = result.candidates.map((n) => `<span class="ball">${escapeHtml(n)}</span>`).join("");
   const actual = result.referenceDraw.numbers.map((n) => escapeHtml(String(n).padStart(2, "0"))).join("、");
-  const history = result.recentDraws.map((draw) => `<tr><td>${escapeHtml(draw.date)}</td><td>${escapeHtml(draw.period ?? "")}</td><td>${draw.numbers.map((n) => escapeHtml(String(n).padStart(2, "0"))).join("、")}</td></tr>`).join("");
+  const history = result.recentDraws.map((draw) => `<tr><td>${escapeHtml(draw.date)}（${escapeHtml(draw.weekday)}）</td><td>${escapeHtml(draw.period ?? "")}</td><td>${draw.numbers.map((n) => escapeHtml(String(n).padStart(2, "0"))).join("、")}</td></tr>`).join("");
   return `<!doctype html>
 <html lang="zh-Hant">
 <head>
