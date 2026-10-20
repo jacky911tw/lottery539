@@ -1,11 +1,12 @@
 # 今彩539候選號碼
 
-以 Cloudflare Workers 執行的簡易今彩539候選號碼頁面。Worker 會取得最近一期星期六的開獎資料，依固定規則計算候選號碼，並提供網頁與 JSON 介面。
+以 Cloudflare Workers 執行的簡易今彩539候選號碼頁面。Worker 會取得最近一期星期六的開獎資料，依固定規則計算候選號碼，並顯示最近 10 期開獎號碼，提供網頁與 JSON 介面。
 
 ## 線上版本
 
 - 網頁：[lottery539.jacky.me.uk](https://lottery539.jacky.me.uk/)
 - JSON API：[lottery539.jacky.me.uk/api](https://lottery539.jacky.me.uk/api)
+- `/api` 回應包含最近 10 期開獎號碼（`recentDraws`）與候選號碼。
 
 ## 候選號碼規則
 

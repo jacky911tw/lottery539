@@ -6,7 +6,7 @@ export default {
     const url = new URL(request.url);
 
     try {
-      const draw = await getLatestSaturdayDraw();
+      const { referenceDraw: draw, recentDraws } = await getDrawData();
       const candidates = predictNextDraw(draw.numbers);
       const result = {
         game: "今彩539",
@@ -15,6 +15,7 @@ export default {
           period: draw.period,
           numbers: draw.numbers,
         },
+        recentDraws,
         candidates,
         rules: [
           "最近一期星期六的第 3 個號碼，取前一個、原號碼、後一個",
@@ -40,7 +41,7 @@ export default {
   },
 };
 
-async function getLatestSaturdayDraw() {
+async function getDrawData() {
   const endDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Taipei",
     year: "numeric",
@@ -72,16 +73,28 @@ async function getLatestSaturdayDraw() {
     throw new Error("API 回傳格式不符合預期");
   }
 
-  const draw = records.find((record) => {
+  const validRecords = records.filter((record) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(record.draw_date) &&
+    Array.isArray(record.numbers) && record.numbers.length >= 5
+  ).sort((a, b) => b.draw_date.localeCompare(a.draw_date));
+
+  const draw = validRecords.find((record) => {
     const date = new Date(`${record.draw_date}T00:00:00Z`);
     return Number.isFinite(date.getTime()) && date.getUTCDay() === 6;
   });
 
-  if (!draw || !Array.isArray(draw.numbers) || draw.numbers.length < 5) {
+  if (!draw) {
     throw new Error("找不到最近一期星期六的今彩539開獎資料");
   }
 
-  return draw;
+  return {
+    referenceDraw: draw,
+    recentDraws: validRecords.slice(0, 10).map((record) => ({
+      date: record.draw_date,
+      period: record.period,
+      numbers: record.numbers.slice(0, 5),
+    })),
+  };
 }
 
 function predictNextDraw(numbers) {
@@ -109,6 +122,7 @@ function html(body) {
 function renderPage(result) {
   const numbers = result.candidates.map((n) => `<span class="ball">${escapeHtml(n)}</span>`).join("");
   const actual = result.referenceDraw.numbers.map((n) => escapeHtml(String(n).padStart(2, "0"))).join("、");
+  const history = result.recentDraws.map((draw) => `<tr><td>${escapeHtml(draw.date)}</td><td>${escapeHtml(draw.period ?? "")}</td><td>${draw.numbers.map((n) => escapeHtml(String(n).padStart(2, "0"))).join("、")}</td></tr>`).join("");
   return `<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -120,12 +134,18 @@ function renderPage(result) {
     h1{font-size:1.7rem}.balls{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}
     .ball{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#c92828;color:white;font-weight:700}
     .muted{color:#666;line-height:1.7}.card{padding:18px;background:#f6f6f6;border-radius:12px}
+    table{width:100%;border-collapse:collapse;margin:16px 0}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid #ddd}th{background:#f6f6f6}.history{overflow-x:auto}
   </style>
 </head>
 <body>
   <h1>今彩539下期候選號碼</h1>
   <p>依據 ${escapeHtml(result.referenceDraw.date)}（第 ${escapeHtml(result.referenceDraw.period)} 期）星期六開獎號碼：${actual}</p>
   <div class="balls">${numbers}</div>
+  <h2>最近 10 期開獎號碼</h2>
+  <div class="history"><table>
+    <thead><tr><th>日期</th><th>期別</th><th>開獎號碼</th></tr></thead>
+    <tbody>${history}</tbody>
+  </table></div>
   <div class="card">
     <strong>計算方式</strong>
     <p class="muted">星期六第 3 個號碼取前一個、原號碼、後一個；第 5 個號碼取減 20、減 10、原號碼。合併去重後保留 1 至 39。</p>
